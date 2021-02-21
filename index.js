@@ -36,7 +36,7 @@ function tirada_dado(message){
         serieCantidadCara = obtenerSerieCantidadCara(mensaje[1],message)
 
         if (serieCantidadCara == -1){
-            message.channel.send( "Seriecantidadcara dio NaN");
+            //message.channel.send( "Seriecantidadcara dio NaN");
             return 0 
         }
         
@@ -44,12 +44,32 @@ function tirada_dado(message){
         cantidad = serieCantidadCara[1]
         cara = serieCantidadCara[2]
 
-        message.channel.send( 'serie: ' + serie +  ' cantidad: ' + cantidad + ' cara: ' + cara);
+        //message.channel.send( 'serie: ' + serie +  ' cantidad: ' + cantidad + ' cara: ' + cara);
 
-        var resultado =  tirarDados(serie,cantidad,cara)
-        message.channel.send( `${message.author}` + ' rolled ' + '**(' + resultado +')**.');
+        var resultado =  tirarDados(serie,cantidad,cara,message)
+        suma = 0
+        parseInt(suma,10)
+        if (serie == 1){
+            for(var j=0; j<cantidad; j++){
+                suma += parseInt(resultado[0][j],10)
+                suma = parseInt(suma,10)
+            }
+            message.channel.send( `${message.author}` + ' rolled ' + '**(' + resultado +') => '+suma+'**.');
+        }else{
+            message.channel.send( `${message.author}` + ' rolled :');
+            for(var i=0; i<serie; i++){
+                suma = 0
+                parseInt(suma,10)
+                for(var j=0; j<cantidad; j++){
+                    suma += parseInt(resultado[i][j],10)
+                    suma = parseInt(suma,10)
+                }
+                message.channel.send( '**(' + resultado[i] +') => '+suma+'**.');
+            }
+        }
+        
     }else{ // Por defecto tiro 1d20
-        var resultado =  tirarDados(1,20,1)
+        var resultado =  tirarDados(1,1,20,message)
        // message.channel.send( `${message.author}` + ' rolled ' + '**' +  +'**.');
         message.channel.send( `${message.author}` + ' rolled ' + '**(' + resultado[0] +')**.');
     }
@@ -65,14 +85,22 @@ function tirada_dado(message){
 
 function obtenerSerieCantidadCara(mensaje,message){
     serieCantidadCara = obtenerSerie_cantidadCara(mensaje,message)
+    if (serieCantidadCara == -1){
+        return -1
+    }
     serie = serieCantidadCara[0]
+    
+    
     cantidadCara = obtenerCantidad_cara(serieCantidadCara[1],message)
+    
+    if (cantidadCara == -1){
+        return -1
+    }
     cantidad = cantidadCara[0]
     cara = cantidadCara[1]
 
-    if (serie == -1 || cantidadCara == -1){
-        return -1
-    }
+    
+    
 
     return [serie,cantidad,cara]
     
@@ -87,14 +115,15 @@ function obtenerSerie_cantidadCara(mensaje,message){
         // Hay x en el mensaje
         mensaje = mensaje.split('x') 
         
-        serie   = parseInt(mensaje[0])
+        serie   = parseInt(mensaje[0],10)
 
-        if (isNaN(serie)){
-            message.channel.send( "Serie dio NaN");
+        if (Number.isNaN(serie)){
+            //message.channel.send( "Serie dio NaN");
             return -1
         }
 
         mensaje = mensaje[1]
+        //message.channel.send( "mensaje: "+ mensaje);
 
     }else{
 
@@ -107,7 +136,7 @@ function obtenerSerie_cantidadCara(mensaje,message){
 function obtenerCantidad_cara(mensaje,message){
     if (mensaje.includes('d')){
         cantidadCara = mensaje.split('d')
-        if(cantidadCara[0] == 'd'){
+        if(mensaje[0] == 'd'){
             cantidad = 1
         }else{
             cantidad = parseInt(cantidadCara[0])
@@ -115,8 +144,8 @@ function obtenerCantidad_cara(mensaje,message){
 
         cara = parseInt(cantidadCara[1])
 
-        if(isNaN(cara) || isNaN(cantidad)){
-            message.channel.send( "Cara o Cantidad dio NaN");
+        if(Number.isNaN(cara) || Number.isNaN(cantidad)){
+           // message.channel.send( "Cara o Cantidad dio NaN");
             return -1
         }
 
@@ -125,32 +154,37 @@ function obtenerCantidad_cara(mensaje,message){
         return -1
     }
 }
-function tirarDados(cantidadDados,carasDado,cantidadVeces){
+function tirarDados(cantidadVeces,cantidadDados,carasDado,message){
     var veces = 0
-    tiradas = {}
+
+    tiradasTotal = []
     
     for(veces; veces < cantidadVeces; veces++){
-       tiradas[veces] = tirada(cantidadDados,carasDado)
+       tiradasTotal.push(tirada(cantidadDados,carasDado,message))
+       //message.channel.send( "serieTiradas: "+tiradasTotal[0]);
     }
 
-    return tiradas
+
+    return tiradasTotal
 
 }
 
-function tirada(cantidadDados,carasDado){
+function tirada(cantidadDados,carasDado,message){
     var cantidad = 0
-    tiradas = {}
+    tiradas = []
 
     for (cantidad; cantidad < cantidadDados; cantidad++){
-        tiradas[cantidad] = ejecutarTirada(carasDado)
+        tiradas.push(ejecutarTirada(carasDado,message))
     }
-
+   // message.channel.send( "TiradasCantDados: "+ tiradas);
     return tiradas
 }
 
-function ejecutarTirada(carasDado){
+function ejecutarTirada(carasDado,message){
     var resultado =  Math.random() * (carasDado - minTiradaDado) + minTiradaDado;
-    return resultado.toFixed()
+    resultado = resultado.toFixed()
+   // message.channel.send( "Tirada: "+ resultado);
+    return resultado
 }
 
 client.login(config.BOT_TOKEN)
