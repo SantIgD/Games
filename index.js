@@ -188,3 +188,6 @@ function ejecutarTirada(carasDado,message){
 }
 
 client.login(config.BOT_TOKEN)
+
+
+// se ejecuta con node "nombre archivo".js
